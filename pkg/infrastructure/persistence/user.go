@@ -18,6 +18,6 @@ func NewUserRepository(db *io.SQLDatabase) *UserRepository {
 	}
 }
 
-func (u *UserRepository) GetUser(userID int) (*entity.User, error) {
+func (u *UserRepository) GetUser(userID string) (*entity.User, error) {
 	return nil, nil
 }

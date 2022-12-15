@@ -2,11 +2,12 @@ package user
 
 import (
 	"encoding/json"
-	"github.com/dgrijalva/jwt-go"
 	"golang-jwt-example/pkg/domain/output"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 
 	"go.uber.org/zap"
 )
@@ -67,7 +68,7 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 		//	http.Error(w, string(b), http.StatusUnauthorized)
 		//	return
 		//}
-		user, err := m.repo.UserRepository.GetUser(1)
+		user, err := m.repo.UserRepository.GetUser("1")
 		if err != nil {
 			b, err := json.Marshal(output.NewHttpUnauthorized())
 			if err != nil {

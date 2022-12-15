@@ -9,7 +9,7 @@ import (
 type contextKey string
 
 const currentAccessTokenKey = "currentAccessToken"
-const currentStudentKey contextKey = "currentStudent"
+const currentUserKey contextKey = "currentUser"
 
 func SetCurrentAccessToken(ctx context.Context, currentAccessToken *string) context.Context {
 	return context.WithValue(ctx, currentAccessTokenKey, currentAccessToken)
@@ -25,11 +25,11 @@ func GetCurrentAccessToken(ctx context.Context) (*string, error) {
 }
 
 func SetCurrentStudent(ctx context.Context, currentStudent *entity.User) context.Context {
-	return context.WithValue(ctx, currentStudentKey, currentStudent)
+	return context.WithValue(ctx, currentUserKey, currentStudent)
 }
 
 func GetCurrentStudent(ctx context.Context) (*entity.User, error) {
-	v := ctx.Value(currentStudentKey)
+	v := ctx.Value(currentUserKey)
 	student, ok := v.(*entity.User)
 	if !ok {
 		return nil, errors.New("current student not found")

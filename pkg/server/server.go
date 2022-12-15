@@ -60,24 +60,14 @@ func (s *Server) GracefulShutdown(ctx context.Context) error {
 func (s *Server) registerHandler() {
 	r := mux.NewRouter()
 
-	st := r.PathPrefix("/student/").Subrouter()
-	st.Handle("/classes", s.middleware.User.Auth(s.handler.User.GetUser())).Methods(http.MethodGet)
-	//st.Handle("/login", s.handler.Student.PostLogin()).Methods(http.MethodPost)
-	//st.Handle("/logout", s.middleware.Student.Auth(s.handler.Student.DeleteLogout())).Methods(http.MethodDelete)
-	//st.Handle("/teachers", s.middleware.Student.Auth(s.handler.Student.GetTeachers())).Methods(http.MethodGet)
-	//st.Handle("/me", s.middleware.Student.Auth(s.handler.Student.GetMe())).Methods(http.MethodGet)
-	//st.Handle("/me", s.middleware.Student.Auth(s.handler.Student.PutMe())).Methods(http.MethodPut)
-	//st.Handle("/me/class", s.middleware.Student.Auth(s.handler.Student.GetMeClass())).Methods(http.MethodGet)
-	//st.Handle("/me/grade", s.middleware.Student.Auth(s.handler.Student.GetMeGrade())).Methods(http.MethodGet)
-	//st.Handle("/me/school", s.middleware.Student.Auth(s.handler.Student.GetMeSchool())).Methods(http.MethodGet)
-	//st.Handle("/me/corporation", s.middleware.Student.Auth(s.handler.Student.GetMeCorporation())).Methods(http.MethodGet)
-	//st.Handle("/students", s.middleware.Student.Auth(s.handler.Student.GetStudents())).Methods(http.MethodGet)
-	//st.Handle("/students/{id}", s.middleware.Student.Auth(s.handler.Student.GetStudent())).Methods(http.MethodGet)
-	//st.Handle("/token", s.handler.Student.PostToken()).Methods(http.MethodPost)
+	st := r.PathPrefix("/user/").Subrouter()
+	st.Handle("/login", s.handler.User.Login()).Methods(http.MethodPost)
+	// st.Handle("/logout", s.middleware.User.Auth(s.handler.User.Logout())).Methods(http.MethodDelete)
+	// st.Handle("/token", s.handler.User.GetToken()).Methods(http.MethodPost)
 
-	//r.Handle("/healthz", s.handler.General.HealthCheck())
-	//r.Handle("/version", s.handler.General.Version())
-	//r.NotFoundHandler = s.handler.General.NotFound()
+	r.Handle("/healthz", s.handler.General.HealthCheck())
+	// r.Handle("/version", s.handler.General.Version())
+	// r.NotFoundHandler = s.handler.General.NotFound()
 
 	s.Mux.Handle("/", r)
 }
