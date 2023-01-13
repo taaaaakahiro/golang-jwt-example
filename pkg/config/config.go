@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+
 	"github.com/sethvargo/go-envconfig"
 )
 
@@ -17,10 +18,10 @@ type serverConfig struct {
 }
 
 type databaseConfig struct {
-	DSN              string `env:"MYSQL_DSN,required"`
-	MaxOpenConns     int    `env:"MAX_OPEN_CONNS,default=100"`
-	MaxIdleConns     int    `env:"MAX_IDLE_CONNS,default=100"`
-	ConnsMaxLifetime int    `env:"CONNS_MAX_LIFETIME,default=100"`
+	URI    string `env:"URI,required"`
+	Source string `env:"MONGODB_SOURCE,required"`
+	Database string `env:"MONGODB_DATABASE,required"`
+	
 }
 
 type authConfig struct {

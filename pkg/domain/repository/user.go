@@ -1,7 +1,10 @@
 package repository
 
-import "golang-jwt-example/pkg/domain/entity"
+import (
+	"context"
+	"golang-jwt-example/pkg/domain/entity"
+)
 
 type IUserRepository interface {
-	GetUser(userID string) (*entity.User, error)
+	GetUser(ctx context.Context, userID string) (*entity.User, error)
 }

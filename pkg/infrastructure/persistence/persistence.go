@@ -1,12 +1,14 @@
 package persistence
 
-import "golang-jwt-example/pkg/io"
+import (
+	"go.mongodb.org/mongo-driver/mongo"
+)
 
 type Repositories struct {
 	UserRepository *UserRepository
 }
 
-func NewRepositories(db *io.SQLDatabase) (*Repositories, error) {
+func NewRepositories(db *mongo.Database) (*Repositories, error) {
 	return &Repositories{
 		UserRepository: NewUserRepository(db),
 	}, nil

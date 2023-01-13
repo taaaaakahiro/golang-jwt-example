@@ -3,20 +3,23 @@ package command
 import (
 	"context"
 	"fmt"
-	"go.uber.org/zap"
 	"golang-jwt-example/pkg/config"
 	"golang-jwt-example/pkg/handler"
 	"golang-jwt-example/pkg/infrastructure/persistence"
-	"golang-jwt-example/pkg/io"
 	"golang-jwt-example/pkg/middleware"
 	"golang-jwt-example/pkg/server"
 	"golang-jwt-example/pkg/version"
-	"golang.org/x/sync/errgroup"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -56,23 +59,30 @@ func run(ctx context.Context) int {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	// DB
-	sqlSetting := &config.SQLDBSettings{
-		SqlDsn:              cfg.DB.DSN,
-		SqlMaxOpenConns:     cfg.DB.MaxOpenConns,
-		SqlMaxIdleConns:     cfg.DB.MaxIdleConns,
-		SqlConnsMaxLifetime: cfg.DB.ConnsMaxLifetime,
-	}
-	db, err := io.NewDatabase(sqlSetting)
+	// init mongo db
+	logger.Info("connect to mongo db", zap.String("url", cfg.DB.URI), zap.String("source", cfg.DB.Source))
+	opts := &options.ClientOptions{}
+	mongoClient, err := mongo.NewClient(opts)
 	if err != nil {
-		logger.Error("failed to connect db", zap.Error(err))
+		logger.Error("failed to create mongo db client", zap.Error(err), zap.String("uri", cfg.DB.URI))
 		return exitError
-	} else {
-		logger.Info("successed to connect db")
+	}
+	mongoCtx, mongoCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer mongoCancel()
+	if err := mongoClient.Connect(mongoCtx); err != nil {
+		logger.Error("failed to connect to mongo db", zap.Error(err))
+		return exitError
 	}
 
+	if err := mongoClient.Ping(mongoCtx, readpref.Primary()); err != nil {
+		logger.Error("failed to ping mongo db", zap.Error(err))
+		return exitError
+	}
+
+	mongoDB := mongoClient.Database(cfg.DB.Database)
+
 	// Repository
-	repositories, err := persistence.NewRepositories(db)
+	repositories, err := persistence.NewRepositories(mongoDB)
 	if err != nil {
 		logger.Error("failed to create repositories", zap.Error(err))
 		return exitError
