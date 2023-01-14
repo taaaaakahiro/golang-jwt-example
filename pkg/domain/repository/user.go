@@ -6,5 +6,5 @@ import (
 )
 
 type IUserRepository interface {
-	GetUser(ctx context.Context, userID string) (*entity.User, error)
+	ListUsers(ctx context.Context) ([]*entity.User, error)
 }
