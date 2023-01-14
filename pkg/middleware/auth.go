@@ -1,4 +1,4 @@
-package user
+package middleware
 
 import (
 	"encoding/json"
@@ -68,18 +68,6 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 		//	http.Error(w, string(b), http.StatusUnauthorized)
 		//	return
 		//}
-		user, err := m.repo.UserRepository.GetUser("1")
-		if err != nil {
-			b, err := json.Marshal(output.NewHttpUnauthorized())
-			if err != nil {
-				http.Error(w, output.NewHttpInternalServerError(), http.StatusInternalServerError)
-				m.logger.Error("failed to marshal output unauthorized", zap.Error(err))
-				return
-			}
-			http.Error(w, string(b), http.StatusUnauthorized)
-			return
-		}
-		ctx = SetCurrentStudent(ctx, user)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
