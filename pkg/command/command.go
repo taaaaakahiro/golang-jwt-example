@@ -61,7 +61,7 @@ func run(ctx context.Context) int {
 
 	// init mongo db
 	logger.Info("connect to mongo db", zap.String("url", cfg.DB.URI), zap.String("source", cfg.DB.Source))
-	opts := &options.ClientOptions{}
+	opts := options.Client().ApplyURI(cfg.DB.URI)
 	mongoClient, err := mongo.NewClient(opts)
 	if err != nil {
 		logger.Error("failed to create mongo db client", zap.Error(err), zap.String("uri", cfg.DB.URI))

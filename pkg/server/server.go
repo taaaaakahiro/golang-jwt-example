@@ -60,8 +60,8 @@ func (s *Server) GracefulShutdown(ctx context.Context) error {
 func (s *Server) registerHandler() {
 	r := mux.NewRouter()
 
-	st := r.PathPrefix("/user/").Subrouter()
-	st.Handle("/login", s.handler.User.Login()).Methods(http.MethodPost)
+	st := r.PathPrefix("/user").Subrouter()
+	st.Handle("/all", s.handler.User.ListHandler()).Methods(http.MethodGet)
 	// st.Handle("/logout", s.middleware.User.Auth(s.handler.User.Logout())).Methods(http.MethodDelete)
 	// st.Handle("/token", s.handler.User.GetToken()).Methods(http.MethodPost)
 

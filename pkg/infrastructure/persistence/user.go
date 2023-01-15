@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const collection = "user"
+const collection = "users"
 
 type UserRepository struct {
 	database *mongo.Collection

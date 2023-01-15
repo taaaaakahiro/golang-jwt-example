@@ -31,7 +31,7 @@ func NewHandler(logger *zap.Logger, repositories *persistence.Repositories, cfg 
 	}
 }
 
-func (h *Handler) ListUserHandler() http.Handler {
+func (h *Handler) ListHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		users, err := h.repo.UserRepository.ListUsers(context.Background())
