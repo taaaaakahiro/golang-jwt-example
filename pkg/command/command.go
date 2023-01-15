@@ -6,7 +6,6 @@ import (
 	"golang-jwt-example/pkg/config"
 	"golang-jwt-example/pkg/handler"
 	"golang-jwt-example/pkg/infrastructure/persistence"
-	"golang-jwt-example/pkg/middleware"
 	"golang-jwt-example/pkg/server"
 	"golang-jwt-example/pkg/version"
 	"net"
@@ -95,15 +94,15 @@ func run(ctx context.Context) int {
 		AccessTokenExpiredDuration:  time.Duration(cfg.Auth.AccessTokenExpiredDuration),
 		RefreshTokenExpiredDuration: time.Duration(cfg.Auth.RefreshTokenExpiredDuration),
 	}
-	middlewareConfig := &middleware.Config{
-		AccessTokenSecret:           cfg.Auth.AccessTokenSecret,
-		RefreshTokenSecret:          cfg.Auth.RefreshTokenSecret,
-		AccessTokenExpiredDuration:  time.Duration(cfg.Auth.AccessTokenExpiredDuration),
-		RefreshTokenExpiredDuration: time.Duration(cfg.Auth.RefreshTokenExpiredDuration),
-	}
+	// middlewareConfig := &middleware.Config{
+	// 	AccessTokenSecret:           cfg.Auth.AccessTokenSecret,
+	// 	RefreshTokenSecret:          cfg.Auth.RefreshTokenSecret,
+	// 	AccessTokenExpiredDuration:  time.Duration(cfg.Auth.AccessTokenExpiredDuration),
+	// 	RefreshTokenExpiredDuration: time.Duration(cfg.Auth.RefreshTokenExpiredDuration),
+	// }
 	httpServer := server.NewServer(
 		handler.NewHandler(logger, repositories, handlerConfig),
-		middleware.NewMiddleware(logger, repositories, middlewareConfig),
+		// middleware.NewMiddleware(logger, repositories, middlewareConfig),
 		&server.Config{Log: logger},
 	)
 	wg, ctx := errgroup.WithContext(ctx)
