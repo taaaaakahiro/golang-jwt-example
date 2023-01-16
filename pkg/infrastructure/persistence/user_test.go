@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	"golang-jwt-example/pkg/domain/entity"
+	"golang-jwt-example/pkg/domain/input"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -54,6 +55,46 @@ func TestUserRepo_ListUsers(t *testing.T) {
 			if diff := cmp.Diff(tt.want, got); len(diff) != 0 {
 				t.Errorf("mismatch (-want +got):\n%s", diff)
 			}
+		})
+	}
+
+}
+
+func TestUserRepo_CreateUser(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   input.User
+		wantErr error
+	}{
+		{
+			name: "ok",
+			input: input.User{
+				Name:     "user1",
+				Password: "pass1",
+			},
+			wantErr: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := context.Background()
+		// init db
+		opt := &options.DeleteOptions{}
+		_, _ = userRepo.database.DeleteMany(ctx, opt)
+		// cleanup db
+		t.Cleanup(func() {
+			opt := &options.DeleteOptions{}
+			_, _ = userRepo.database.DeleteMany(ctx, opt)
+		})
+
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := userRepo.CreateUser(ctx, tt.input)
+			if diff := cmp.Diff(tt.wantErr, err); len(diff) != 0 {
+				t.Errorf("mismatch (-want +got):\n%s", diff)
+			}
+			t.Cleanup(func() {
+
+			})
 		})
 	}
 
