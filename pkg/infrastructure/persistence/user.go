@@ -3,9 +3,11 @@ package persistence
 import (
 	"context"
 	"golang-jwt-example/pkg/domain/entity"
+	"golang-jwt-example/pkg/domain/input"
 	"golang-jwt-example/pkg/domain/repository"
 	"log"
 
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -52,4 +54,18 @@ func (r *UserRepository) ListUsers(ctx context.Context) ([]*entity.User, error) 
 
 	return users, nil
 
+}
+
+func (r *UserRepository) CreateUser(ctx context.Context, inputData input.User) (interface{}, error) {
+	// opts := options.InsertOneOptions{}
+	data := input.User{
+		Name:     inputData.Name,
+		Password: inputData.Password,
+	}
+	id, err := r.database.InsertOne(ctx, data, nil)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return id, nil
 }
