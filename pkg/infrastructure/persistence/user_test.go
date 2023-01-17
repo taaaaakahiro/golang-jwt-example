@@ -2,11 +2,14 @@ package persistence
 
 import (
 	"context"
+	"fmt"
 	"golang-jwt-example/pkg/domain/entity"
 	"golang-jwt-example/pkg/domain/input"
+	"log"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -64,6 +67,7 @@ func TestUserRepo_CreateUser(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   input.User
+		want    entity.User
 		wantErr error
 	}{
 		{
@@ -72,6 +76,7 @@ func TestUserRepo_CreateUser(t *testing.T) {
 				Name:     "user1",
 				Password: "pass1",
 			},
+			want:    entity.User{Name: "user1", Password: "pass1"},
 			wantErr: nil,
 		},
 	}
@@ -88,13 +93,22 @@ func TestUserRepo_CreateUser(t *testing.T) {
 		})
 
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := userRepo.CreateUser(ctx, tt.input)
+			insertID, err := userRepo.CreateUser(ctx, tt.input)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			var got entity.User
+			err = userRepo.database.FindOne(ctx, bson.M{"_id": insertID}).Decode(&got)
+			fmt.Println(got)
+
 			if diff := cmp.Diff(tt.wantErr, err); len(diff) != 0 {
 				t.Errorf("mismatch (-want +got):\n%s", diff)
 			}
-			t.Cleanup(func() {
+			if diff := cmp.Diff(tt.want, got); len(diff) != 0 {
+				t.Errorf("mismatch (-want +got):\n%s", diff)
+			}
 
-			})
 		})
 	}
 

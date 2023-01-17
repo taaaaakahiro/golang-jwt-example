@@ -67,5 +67,5 @@ func (r *UserRepository) CreateUser(ctx context.Context, inputData input.User) (
 		return nil, errors.WithStack(err)
 	}
 
-	return id, nil
+	return id.InsertedID, nil
 }
