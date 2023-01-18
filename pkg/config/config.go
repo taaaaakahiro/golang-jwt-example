@@ -18,10 +18,9 @@ type serverConfig struct {
 }
 
 type databaseConfig struct {
-	URI    string `env:"URI,required"`
-	Source string `env:"MONGODB_SOURCE,required"`
+	URI      string `env:"URI,required"`
+	Source   string `env:"MONGODB_SOURCE,required"`
 	Database string `env:"MONGODB_DATABASE,required"`
-	
 }
 
 type authConfig struct {

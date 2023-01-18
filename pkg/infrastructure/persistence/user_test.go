@@ -73,10 +73,10 @@ func TestUserRepo_CreateUser(t *testing.T) {
 		{
 			name: "ok",
 			input: input.User{
-				Name:     "user1",
-				Password: "pass1",
+				Name:     "NewUser1",
+				Password: "NewPass1",
 			},
-			want:    entity.User{Name: "user1", Password: "pass1"},
+			want:    entity.User{Name: "NewPass1", Password: "NewPass1"},
 			wantErr: nil,
 		},
 	}
