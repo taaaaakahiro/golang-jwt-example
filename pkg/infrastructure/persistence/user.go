@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const collection = "users"
@@ -58,9 +59,15 @@ func (r *UserRepository) ListUsers(ctx context.Context) ([]*entity.User, error) 
 
 func (r *UserRepository) CreateUser(ctx context.Context, inputData input.User) (interface{}, error) {
 	// opts := options.InsertOneOptions{}
+
+	password, err := bcrypt.GenerateFromPassword([]byte(inputData.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
 	data := input.User{
 		Name:     inputData.Name,
-		Password: inputData.Password,
+		Password: string(password),
 	}
 	id, err := r.database.InsertOne(ctx, data, nil)
 	if err != nil {

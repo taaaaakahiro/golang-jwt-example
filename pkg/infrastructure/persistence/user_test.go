@@ -9,8 +9,11 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func TestUserRepo_ListUsers(t *testing.T) {
@@ -74,9 +77,11 @@ func TestUserRepo_CreateUser(t *testing.T) {
 			name: "ok",
 			input: input.User{
 				Name:     "NewUser1",
-				Password: "NewPass1",
+				Password: "NewPassword1",
 			},
-			want:    entity.User{Name: "NewPass1", Password: "NewPass1"},
+			want: entity.User{
+				Name: "NewUser1",
+			},
 			wantErr: nil,
 		},
 	}
@@ -100,14 +105,19 @@ func TestUserRepo_CreateUser(t *testing.T) {
 
 			var got entity.User
 			err = userRepo.database.FindOne(ctx, bson.M{"_id": insertID}).Decode(&got)
-			fmt.Println(got)
+			fmt.Println(got.Password)
 
 			if diff := cmp.Diff(tt.wantErr, err); len(diff) != 0 {
 				t.Errorf("mismatch (-want +got):\n%s", diff)
 			}
-			if diff := cmp.Diff(tt.want, got); len(diff) != 0 {
+			opt := cmpopts.IgnoreFields(entity.User{}, "Password")
+			if diff := cmp.Diff(tt.want, got, opt); len(diff) != 0 {
 				t.Errorf("mismatch (-want +got):\n%s", diff)
 			}
+
+			// hash password check
+			err = bcrypt.CompareHashAndPassword([]byte(got.Password), []byte(tt.input.Password))
+			assert.NoError(t, err)
 
 		})
 	}
