@@ -29,9 +29,9 @@ func Test_Server_ListUsers(t *testing.T) {
 
 	// insert seeds
 	seeds := []interface{}{
-		entity.User{ID: 1, Name: "user1", Password: "pass1"},
-		entity.User{ID: 2, Name: "user2", Password: "pass2"},
-		entity.User{ID: 3, Name: "user3", Password: "pass3"},
+		entity.User{UserID: "userId1", Name: "user1", Password: "pass1"},
+		entity.User{UserID: "userId2", Name: "user2", Password: "pass2"},
+		entity.User{UserID: "userId3", Name: "user3", Password: "pass3"},
 	}
 	db.InsertMany(ctx, seeds)
 
@@ -57,7 +57,7 @@ func Test_Server_ListUsers(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Len(t, got, 3)
-		assert.Equal(t, 1, got[0].ID)
+		assert.Equal(t, "userId1", got[0].UserID)
 		assert.Equal(t, "user1", got[0].Name)
 		assert.Equal(t, "pass1", got[0].Password)
 

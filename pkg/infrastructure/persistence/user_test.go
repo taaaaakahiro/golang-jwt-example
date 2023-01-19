@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"golang-jwt-example/pkg/domain/entity"
 	"golang-jwt-example/pkg/domain/input"
-	"log"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -26,9 +25,9 @@ func TestUserRepo_ListUsers(t *testing.T) {
 		{
 			name: "ok",
 			want: []*entity.User{
-				{ID: 1, Name: "user1", Password: "pass1"},
-				{ID: 2, Name: "user2", Password: "pass2"},
-				{ID: 3, Name: "user3", Password: "pass3"},
+				{UserID: "userId1", Name: "user1", Password: "pass1"},
+				{UserID: "userId2", Name: "user2", Password: "pass2"},
+				{UserID: "userId3", Name: "user3", Password: "pass3"},
 			},
 			wantErr: nil,
 		},
@@ -47,9 +46,9 @@ func TestUserRepo_ListUsers(t *testing.T) {
 
 		// insert seeds
 		seeds := []interface{}{
-			entity.User{ID: 1, Name: "user1", Password: "pass1"},
-			entity.User{ID: 2, Name: "user2", Password: "pass2"},
-			entity.User{ID: 3, Name: "user3", Password: "pass3"},
+			entity.User{UserID: "userId1", Name: "user1", Password: "pass1"},
+			entity.User{UserID: "userId2", Name: "user2", Password: "pass2"},
+			entity.User{UserID: "userId3", Name: "user3", Password: "pass3"},
 		}
 		userRepo.database.InsertMany(ctx, seeds)
 
@@ -99,9 +98,7 @@ func TestUserRepo_CreateUser(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			insertID, err := userRepo.CreateUser(ctx, tt.input)
-			if err != nil {
-				log.Fatal(err)
-			}
+			assert.NoError(t, err)
 
 			var got entity.User
 			err = userRepo.database.FindOne(ctx, bson.M{"_id": insertID}).Decode(&got)
