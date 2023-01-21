@@ -4,13 +4,6 @@ on:
   push:
     branches:
       - master
-    paths-ignore:
-      - '**.md'
-      - '**.env*'
-  pull_request:
-    paths-ignore:
-      - '**.md'
-      - '**.env*'
 
 jobs:
 
