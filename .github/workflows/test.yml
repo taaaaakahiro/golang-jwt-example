@@ -3,15 +3,15 @@ name: Test
 on:
   push:
     branches:
-      - master 
+      - master
       - develop
     paths-ignore:
       - '**.md'
       - '**.env*'
   pull_request:
     branches:
-        - master
-        - develop
+      - master
+      - develop
     paths-ignore:
       - '**.md'
       - '**.env*'
@@ -22,67 +22,36 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      db:
-        image: mysql:8.0
-        ports:
-          - 3306:3306
+      mongodb:
+        image: mongo:5.0.3
         env:
-          MYSQL_DATABASE: ibl
-          MYSQL_ROOT_USER: root
-          MYSQL_ROOT_PASSWORD: password
-        options: >-
-          --health-cmd "mysqladmin ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: password
+          MONGO_INITDB_DATABASE: example
+          TZ: Asia/Tokyo
+        ports:
+          - 27017:27017
 
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.16
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18
-
-      - name: Check out code
-        uses: actions/checkout@v2
-
+          go-version: 1.16
+      - uses: actions/checkout@v2
       - name: Cache go modules
         uses: actions/cache@v2
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('go.sum') }}
           restore-keys: ${{ runner.os }}-go-
-
       - name: Run go fmt
         if: runner.os != 'Windows'
         run: diff -u <(echo -n) <(gofmt -d -s .)
       - name: Run go vet
-        run: go vet -tags=test_fixture ./...
-
+        run: go vet ./...
       - name: Run go test
-        run: |
-          go test -v -race -coverprofile ./coverage/coverage.txt -covermode atomic -tags=test_fixture ./...
-          go tool cover -func=./coverage/coverage.txt
-          go tool cover -html=./coverage/coverage.txt -o ./coverage/coverage.html  
+        run: go test -v -race -coverprofile coverage.txt -covermode atomic ./...
         env:
           PORT: 8080
-          MYSQL_DATABASE: ibl
-          MYSQL_DSN: root:password@tcp(localhost:3306)/ibl?charset=utf8mb4&parseTime=True
-          ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-          ALLOW_CORS_ORIGIN: "*"
-
-      - name: Run go test login
-        run: |
-          go test ./pkg/middleware/ -tags=test_login
-        env:
-          PORT: 8080
-          MYSQL_DATABASE: ibl
-          MYSQL_DSN: root:password@tcp(localhost:3306)/ibl?charset=utf8mb4&parseTime=True
-          ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-          ALLOW_CORS_ORIGIN: "*"
-
-      - name: Deploy GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./coverage
-   
+          MONGODB_DATABASE: example
+          MONGODB_URL: mongodb://root:password@localhost:27017
