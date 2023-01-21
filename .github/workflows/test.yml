@@ -1,0 +1,54 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+      - '**.env*'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - '**.env*'
+
+jobs:
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:5.0.3
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: password
+          MONGO_INITDB_DATABASE: example
+          TZ: Asia/Tokyo
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Set up Go 1.16
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+      - uses: actions/checkout@v2
+      - name: Cache go modules
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+      - name: Run go fmt
+        if: runner.os != 'Windows'
+        run: diff -u <(echo -n) <(gofmt -d -s .)
+      - name: Run go vet
+        run: go vet ./...
+      - name: Run go test
+        run: go test -v -race -coverprofile coverage.txt -covermode atomic ./...
+        env:
+          PORT: 8080
+          MONGODB_DATABASE: example
+          MONGODB_URL: mongodb://root:password@localhost:27017
