@@ -4,9 +4,19 @@ on:
   push:
     branches:
       - master
+      - develop
+    paths-ignore:
+      - '**.md'
+      - '**.env*'
+  pull_request:
+    branches:
+      - master
+      - develop
+    paths-ignore:
+      - '**.md'
+      - '**.env*'
 
 jobs:
-
   test:
     name: Test
     runs-on: ubuntu-latest
