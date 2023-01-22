@@ -1,6 +1,6 @@
 package input
 
-type StudentLogin struct {
+type UserLogin struct {
 	LoginID  string
 	Password string
 }
