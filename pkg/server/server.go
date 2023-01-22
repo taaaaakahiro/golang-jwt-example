@@ -60,6 +60,7 @@ func (s *Server) registerHandler() {
 
 	st := r.PathPrefix("/user").Subrouter()
 	st.Handle("/all", s.handler.User.ListHandler()).Methods(http.MethodGet)
+	st.Handle("/login", s.handler.User.LoginHandler()).Methods(http.MethodGet)
 	// st.Handle("/logout", s.middleware.User.Auth(s.handler.User.Logout())).Methods(http.MethodDelete)
 	// st.Handle("/token", s.handler.User.GetToken()).Methods(http.MethodPost)
 
