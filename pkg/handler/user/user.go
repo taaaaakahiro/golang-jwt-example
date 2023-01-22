@@ -3,13 +3,10 @@ package user
 import (
 	"context"
 	"encoding/json"
-	"golang-jwt-example/pkg/domain/output"
 	"golang-jwt-example/pkg/infrastructure/persistence"
 	"net/http"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/oklog/ulid/v2"
 	"go.uber.org/zap"
 )
 
@@ -49,27 +46,6 @@ func (h *Handler) ListHandler() http.Handler {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write(b)
-	})
-}
-
-func (h *Handler) LoginHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ulid := ulid.Make()
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-			ID:      ulid.String(),
-			Subject: "subject",
-		})
-		accessToken, err := token.SignedString([]byte("access_token_secret"))
-		if err != nil {
-			http.Error(w, output.NewHttpInternalServerError(), http.StatusInternalServerError)
-			h.logger.Error("failed to sign access token", zap.Error(err))
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-
-		b, _ := json.Marshal(accessToken)
 		w.Write(b)
 	})
 }
