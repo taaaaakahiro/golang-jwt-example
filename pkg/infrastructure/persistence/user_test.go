@@ -15,6 +15,54 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+func TestUserRepo_GetUser(t *testing.T) {
+	// start test
+	tests := []struct {
+		name    string
+		userID  string
+		want    *entity.User
+		wantErr error
+	}{
+		{
+			name:    "ok",
+			userID:  "1",
+			want:    &entity.User{UserID: "1", Name: "user1", Password: "pass1"},
+			wantErr: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := context.Background()
+		// init db
+		opt := &options.DeleteOptions{}
+		_, _ = userRepo.database.DeleteMany(ctx, opt)
+		// cleanup db
+		t.Cleanup(func() {
+			opt := &options.DeleteOptions{}
+			_, _ = userRepo.database.DeleteMany(ctx, opt)
+		})
+
+		// insert seeds
+		seeds := []interface{}{
+			entity.User{UserID: "1", Name: "user1", Password: "pass1"},
+			entity.User{UserID: "2", Name: "user2", Password: "pass2"},
+			entity.User{UserID: "3", Name: "user3", Password: "pass3"},
+		}
+		userRepo.database.InsertMany(ctx, seeds)
+
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := userRepo.GetUser(ctx, tt.userID)
+			if diff := cmp.Diff(tt.wantErr, err); len(diff) != 0 {
+				t.Errorf("mismatch (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(tt.want, got); len(diff) != 0 {
+				t.Errorf("mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+
+}
+
 func TestUserRepo_ListUsers(t *testing.T) {
 	// start test
 	tests := []struct {
@@ -62,7 +110,6 @@ func TestUserRepo_ListUsers(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestUserRepo_CreateUser(t *testing.T) {

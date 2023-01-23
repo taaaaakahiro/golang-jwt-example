@@ -29,6 +29,20 @@ func NewUserRepository(db *mongo.Database) *UserRepository {
 	}
 }
 
+func (r *UserRepository) GetUser(ctx context.Context, userID string) (*entity.User, error) {
+	user := entity.User{}
+	flt := bson.D{
+		primitive.E{Key: "user_id", Value: userID},
+	}
+	opt := options.FindOne()
+	err := r.database.FindOne(ctx, flt, opt).Decode(&user)
+	if err == mongo.ErrNoDocuments {
+		log.Printf("user not found userID = %s", userID)
+		return nil, errors.WithStack(err)
+	}
+	return &user, nil
+}
+
 func (r *UserRepository) ListUsers(ctx context.Context) ([]*entity.User, error) {
 	users := make([]*entity.User, 0)
 	srt := bson.D{
