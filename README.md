@@ -8,7 +8,8 @@ $ make run
 
 ## Request
 ```
-$ curl -X GET localhost:9000/user/all
+$ curl -X GET localhost:9000/user/all -H "accept: application/json"
+$ curl -X POST localhost:9000/user/login -H "accept: application/json" -d"{\"login_id\":\"user1\",\"password\":\"pass1\"}"
 ```
 
 ## Docs

@@ -61,6 +61,13 @@ func Test_Server_ListUsers(t *testing.T) {
 		assert.Equal(t, "user1", got[0].Name)
 		assert.Equal(t, "pass1", got[0].Password)
 
+		assert.Equal(t, "userId2", got[1].UserID)
+		assert.Equal(t, "user2", got[1].Name)
+		assert.Equal(t, "pass2", got[1].Password)
+
+		assert.Equal(t, "userId3", got[2].UserID)
+		assert.Equal(t, "user3", got[2].Name)
+		assert.Equal(t, "pass3", got[2].Password)
 	})
 
 }
