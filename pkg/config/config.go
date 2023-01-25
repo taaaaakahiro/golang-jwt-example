@@ -24,10 +24,8 @@ type databaseConfig struct {
 }
 
 type authConfig struct {
-	AccessTokenSecret           string `env:"ACCESS_TOKEN_SECRET,default=access_token_secret"`
-	RefreshTokenSecret          string `env:"REFRESH_TOKEN_SECRET,default=refresh_token_secret"`
-	AccessTokenExpiredDuration  int64  `env:"ACCESS_TOKEN_EXPIRED_DURATION,default=3600000000000"`  // time.Hour * 1
-	RefreshTokenExpiredDuration int64  `env:"REFRESH_TOKEN_EXPIRED_DURATION,default=7200000000000"` // time.Hour * 2
+	AccessTokenSecret          string `env:"ACCESS_TOKEN_SECRET,default=access_token_secret"`
+	AccessTokenExpiredDuration int64  `env:"ACCESS_TOKEN_EXPIRED_DURATION,default=3600000000000"` // time.Hour * 1
 }
 
 func LoadConfig(ctx context.Context) (*Config, error) {

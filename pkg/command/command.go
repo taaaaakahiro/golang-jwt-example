@@ -89,10 +89,8 @@ func run(ctx context.Context) int {
 
 	// Http server
 	handlerConfig := &handler.Config{
-		AccessTokenSecret:           cfg.Auth.AccessTokenSecret,
-		RefreshTokenSecret:          cfg.Auth.RefreshTokenSecret,
-		AccessTokenExpiredDuration:  time.Duration(cfg.Auth.AccessTokenExpiredDuration),
-		RefreshTokenExpiredDuration: time.Duration(cfg.Auth.RefreshTokenExpiredDuration),
+		AccessTokenSecret:          cfg.Auth.AccessTokenSecret,
+		AccessTokenExpiredDuration: time.Duration(cfg.Auth.AccessTokenExpiredDuration),
 	}
 	// middlewareConfig := &middleware.Config{
 	// 	AccessTokenSecret:           cfg.Auth.AccessTokenSecret,
