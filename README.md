@@ -20,5 +20,8 @@ $ curl -X POST localhost:9000/user/login -H "accept: application/json" -d"{\"log
 ## jwt
  - https://jwt.io/
  - https://zenn.dev/mfykmn/articles/eeaeb9a05130b8
- - 
+ - jwt token
+```sh
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VySWQxIiwiZXhwIjozMjUwNTc5NTg3NSwibmJmIjoxNjc0NjQ2ODc3LCJpYXQiOjE2NzQ2NDY4NzcsImp0aSI6IjAxR1FNQlBYNzdCOFQzMFBYUE5RWFg4Mk1XIn0.zSOH26U02bu2XnX_TWJfwPUmztTZr95lEbakpyEra90 #unlimited jwt token
+```
 

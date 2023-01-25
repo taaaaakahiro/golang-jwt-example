@@ -6,6 +6,7 @@ import (
 	"golang-jwt-example/pkg/domain/output"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/oklog/ulid/v2"
@@ -47,11 +48,17 @@ func (h *Handler) LoginHandler() http.Handler {
 
 		//JWT生成
 		ulid := ulid.Make()
+		now := time.Now().UTC()
+		numericNow := jwt.NewNumericDate(now)
+		accessTokenExpiredAt := now.Add(h.cfg.AccessTokenExpiredDuration)
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-			ID:      ulid.String(),
-			Subject: "subject",
+			ID:        ulid.String(),
+			Subject:   loginInfo.LoginID,
+			ExpiresAt: jwt.NewNumericDate(accessTokenExpiredAt),
+			NotBefore: numericNow,
+			IssuedAt:  numericNow,
 		})
-		accessToken, err := token.SignedString([]byte("access_token_secret"))
+		accessToken, err := token.SignedString([]byte(h.cfg.AccessTokenSecret))
 		if err != nil {
 			http.Error(w, output.NewHttpInternalServerError(), http.StatusInternalServerError)
 			h.logger.Error("failed to sign access token", zap.Error(err))
