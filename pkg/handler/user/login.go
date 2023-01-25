@@ -37,6 +37,12 @@ func (h *Handler) LoginHandler() http.Handler {
 			h.logger.Error("failed to get user", zap.Error(err))
 			return
 		}
+		if user == nil {
+			msg := "unauthorized user"
+			http.Error(w, msg, http.StatusUnauthorized)
+			h.logger.Error("unauthorized user")
+			return
+		}
 
 		// パスワード検証
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginInfo.Password))

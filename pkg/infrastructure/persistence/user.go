@@ -36,10 +36,16 @@ func (r *UserRepository) GetUser(ctx context.Context, userID string) (*entity.Us
 	}
 	opt := options.FindOne()
 	err := r.database.FindOne(ctx, flt, opt).Decode(&user)
-	if err == mongo.ErrNoDocuments {
-		log.Printf("user not found userID = %s", userID)
-		return nil, errors.WithStack(err)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			log.Printf("user not found userID = %s", userID)
+			return nil, nil
+		default:
+			return nil, errors.WithStack(err)
+		}
 	}
+
 	return &user, nil
 }
 
