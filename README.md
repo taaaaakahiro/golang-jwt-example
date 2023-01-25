@@ -17,7 +17,7 @@ $ curl -X POST localhost:9000/user/login -H "accept: application/json" -d"{\"log
  - https://qiita.com/akubi0w1/items/dee1000699a3e9d9b2e3  
  - https://qiita.com/suzuki0430/items/f8308db9220c7bf19fa2  
  
-## jwt
+## JWT
  - https://jwt.io/
  - https://zenn.dev/mfykmn/articles/eeaeb9a05130b8
  - jwt token
