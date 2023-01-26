@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
 
@@ -47,5 +48,38 @@ func (h *Handler) ListHandler() http.Handler {
 
 		w.WriteHeader(http.StatusOK)
 		w.Write(b)
+	})
+}
+
+func (h *Handler) GetUser() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		vars := mux.Vars(r)
+		id := vars["id"]
+		user, err := h.repo.UserRepository.GetUser(ctx, id)
+		if err != nil {
+			msg := "failed to get user"
+			h.logger.Error(msg, zap.Error(err))
+			http.Error(w, msg, http.StatusInternalServerError)
+			return
+		}
+		if user == nil {
+			msg := "user is not found"
+			h.logger.Error(msg, zap.Error(err))
+			http.Error(w, msg, http.StatusNotFound)
+			return
+		}
+
+		b, err := json.Marshal(user)
+		if err != nil {
+			msg := "failed to marshal error"
+			h.logger.Error(msg, zap.Error(err))
+			http.Error(w, msg, http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write(b)
+
 	})
 }
