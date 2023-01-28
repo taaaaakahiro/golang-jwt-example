@@ -5,6 +5,7 @@ import (
 	"golang-jwt-example/pkg/config"
 	"golang-jwt-example/pkg/handler"
 	"golang-jwt-example/pkg/infrastructure/persistence"
+	"golang-jwt-example/pkg/middleware"
 	"log"
 	"net/http/httptest"
 	"os"
@@ -72,16 +73,16 @@ func TestMain(m *testing.M) {
 		AccessTokenSecret:          cfg.Auth.AccessTokenSecret,
 		AccessTokenExpiredDuration: time.Duration(cfg.Auth.AccessTokenExpiredDuration),
 	}
-	// middlewareConfig := &middleware.Config{
-	// 	AccessTokenSecret:           cfg.Auth.AccessTokenSecret,
-	// 	RefreshTokenSecret:          cfg.Auth.RefreshTokenSecret,
-	// 	AccessTokenExpiredDuration:  time.Duration(cfg.Auth.AccessTokenExpiredDuration),
-	// 	RefreshTokenExpiredDuration: time.Duration(cfg.Auth.RefreshTokenExpiredDuration),
-	// }
+	middlewareConfig := &middleware.Config{
+		AccessTokenSecret: cfg.Auth.AccessTokenSecret,
+		// RefreshTokenSecret:          cfg.Auth.RefreshTokenSecret,
+		AccessTokenExpiredDuration: time.Duration(cfg.Auth.AccessTokenExpiredDuration),
+		// RefreshTokenExpiredDuration: time.Duration(cfg.Auth.RefreshTokenExpiredDuration),
+	}
 	registry := handler.NewHandler(logger, repositories, handlerConfig)
 	s := NewServer(
 		registry,
-		// middleware.NewMiddleware(logger, repositories, middlewareConfig),
+		middleware.NewMiddleware(logger, repositories, middlewareConfig),
 		&Config{Log: logger},
 	)
 	testServer = httptest.NewServer(s.Mux)

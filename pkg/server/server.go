@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"golang-jwt-example/pkg/handler"
+	"golang-jwt-example/pkg/middleware"
 	"net"
 	"net/http"
 
@@ -15,18 +16,18 @@ type Config struct {
 }
 
 type Server struct {
-	Mux     *http.ServeMux
-	server  *http.Server
-	handler *handler.Handler
-	// middleware *middleware.Middleware
-	log *zap.Logger
+	Mux        *http.ServeMux
+	server     *http.Server
+	handler    *handler.Handler
+	middleware *middleware.Middleware
+	log        *zap.Logger
 }
 
-func NewServer(handler *handler.Handler, cfg *Config) *Server {
+func NewServer(handler *handler.Handler, middleware *middleware.Middleware, cfg *Config) *Server {
 	s := &Server{
-		Mux:     http.NewServeMux(),
-		handler: handler,
-		// middleware: middleware,
+		Mux:        http.NewServeMux(),
+		handler:    handler,
+		middleware: middleware,
 	}
 
 	if cfg != nil {
@@ -61,12 +62,11 @@ func (s *Server) registerHandler() {
 	st := r.PathPrefix("/user").Subrouter()
 	st.Handle("/all", s.handler.User.ListHandler()).Methods(http.MethodGet)
 	st.Handle("/login", s.handler.User.LoginHandler()).Methods(http.MethodPost)
-	// st.Handle("/logout", s.middleware.User.Auth(s.handler.User.Logout())).Methods(http.MethodDelete)
 	// st.Handle("/token", s.handler.User.GetToken()).Methods(http.MethodPost)
 
-	r.Handle("/healthz", s.handler.General.HealthCheck())
 	// r.Handle("/version", s.handler.General.Version())
 	// r.NotFoundHandler = s.handler.General.NotFound()
 
+	st.Handle("/auth", s.middleware.Auth(s.handler.User.GetAuthUser())).Methods(http.MethodGet)
 	s.Mux.Handle("/", r)
 }

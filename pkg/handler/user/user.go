@@ -83,3 +83,35 @@ func (h *Handler) GetUser() http.Handler {
 
 	})
 }
+
+func (h *Handler) GetAuthUser() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		id := ctx.Value("user_id")
+
+		user, err := h.repo.UserRepository.GetUser(ctx, id.(string))
+		if err != nil {
+			msg := "failed to get user"
+			h.logger.Error(msg, zap.Error(err))
+			http.Error(w, msg, http.StatusInternalServerError)
+			return
+		}
+		if user == nil {
+			msg := "user is not found"
+			h.logger.Error(msg, zap.Error(err))
+			http.Error(w, msg, http.StatusNotFound)
+			return
+		}
+
+		b, err := json.Marshal(user)
+		if err != nil {
+			msg := "failed to marshal error"
+			h.logger.Error(msg, zap.Error(err))
+			http.Error(w, msg, http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write(b)
+	})
+}

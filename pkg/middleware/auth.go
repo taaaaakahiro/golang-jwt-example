@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"encoding/json"
 	"golang-jwt-example/pkg/domain/output"
 	"net/http"
@@ -57,17 +58,19 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 			return
 		}
 
-		//sub, ok := claims["sub"]
-		//if !ok {
-		//	b, err := json.Marshal(output.NewHttpUnauthorized())
-		//	if err != nil {
-		//		http.Error(w, output.NewHttpInternalServerError(), http.StatusInternalServerError)
-		//		m.logger.Error("failed to marshal output unauthorized", zap.Error(err))
-		//		return
-		//	}
-		//	http.Error(w, string(b), http.StatusUnauthorized)
-		//	return
-		//}
+		sub, ok := claims["sub"]
+		if !ok {
+			b, err := json.Marshal(output.NewHttpUnauthorized())
+			if err != nil {
+				http.Error(w, output.NewHttpInternalServerError(), http.StatusInternalServerError)
+				m.logger.Error("failed to marshal output unauthorized", zap.Error(err))
+				return
+			}
+			http.Error(w, string(b), http.StatusUnauthorized)
+			return
+		}
+		userID := sub.(string)
+		ctx = context.WithValue(ctx, "user_id", userID)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
