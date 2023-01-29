@@ -32,7 +32,10 @@ func TestMain(m *testing.M) {
 }
 
 func getDatabase() *mongo.Database {
-	cfg, _ := config.LoadConfig(context.Background())
+	cfg, err := config.LoadConfig(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
 	opts := &options.ClientOptions{}
 	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(cfg.DB.URI), opts)
 	if err != nil {

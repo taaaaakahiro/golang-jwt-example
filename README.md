@@ -10,6 +10,7 @@ $ make run
 ```
 $ curl -X GET localhost:9000/user/all -H "accept: application/json"
 $ curl -X POST localhost:9000/user/login -H "accept: application/json" -d"{\"login_id\":\"user1\",\"password\":\"pass1\"}"
+$ curl -X GET localhost:9000/auth/users -H "Authorization: <Bearer jwt token>"
 ```
 
 ## Docs

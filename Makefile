@@ -7,5 +7,8 @@ vet:
 run: fmt vet
 	go run ./cmd/api/main.go
 
-test: fmt vet
-	go test ./... -count=1 -v
+clear:
+	go clean -testcache
+
+test: fmt vet clear
+	go test ./... -v
