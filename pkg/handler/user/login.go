@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"golang-jwt-example/pkg/domain/input"
 	"golang-jwt-example/pkg/domain/output"
 	"io"
@@ -53,12 +54,12 @@ func (h *Handler) LoginHandler() http.Handler {
 		}
 
 		//JWT生成
-		ulid := ulid.Make()
+		ulId := ulid.Make()
 		now := time.Now().UTC()
 		numericNow := jwt.NewNumericDate(now)
 		accessTokenExpiredAt := now.Add(h.cfg.AccessTokenExpiredDuration)
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-			ID:        ulid.String(),
+			ID:        ulId.String(),
 			Subject:   loginInfo.LoginID,
 			ExpiresAt: jwt.NewNumericDate(accessTokenExpiredAt),
 			NotBefore: numericNow,
@@ -70,6 +71,16 @@ func (h *Handler) LoginHandler() http.Handler {
 			h.logger.Error("failed to sign access token", zap.Error(err))
 			return
 		}
+
+		redisClient := h.redis.Conn
+		if err = redisClient.Set(ctx, "access_token", accessToken, 1*time.Hour).Err(); err != nil {
+			http.Error(w, output.NewHttpInternalServerError(), http.StatusInternalServerError)
+			h.logger.Error("failed to set access token", zap.Error(err))
+			return
+		}
+
+		fmt.Println(redisClient.Get(ctx, "access_token").String())
+
 		b, err := json.Marshal(accessToken)
 		if err != nil {
 			http.Error(w, output.NewHttpInternalServerError(), http.StatusInternalServerError)

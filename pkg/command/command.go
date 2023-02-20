@@ -6,9 +6,11 @@ import (
 	"golang-jwt-example/pkg/config"
 	"golang-jwt-example/pkg/handler"
 	"golang-jwt-example/pkg/infrastructure/persistence"
+	"golang-jwt-example/pkg/io"
 	"golang-jwt-example/pkg/middleware"
 	"golang-jwt-example/pkg/server"
 	"golang-jwt-example/pkg/version"
+	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -88,6 +90,11 @@ func run(ctx context.Context) int {
 		return exitError
 	}
 
+	redisClient := io.NewRedisClient(cfg)
+	if err = redisClient.Conn.Set(ctx, "access_token", "success set token", 1*time.Hour).Err(); err != nil {
+		log.Fatal(err)
+	}
+
 	// Http server
 	handlerConfig := &handler.Config{
 		AccessTokenSecret:          cfg.Auth.AccessTokenSecret,
@@ -100,7 +107,7 @@ func run(ctx context.Context) int {
 		// RefreshTokenExpiredDuration: time.Duration(cfg.Auth.RefreshTokenExpiredDuration),
 	}
 	httpServer := server.NewServer(
-		handler.NewHandler(logger, repositories, handlerConfig),
+		handler.NewHandler(logger, repositories, handlerConfig, redisClient),
 		middleware.NewMiddleware(logger, repositories, middlewareConfig),
 		&server.Config{Log: logger},
 	)

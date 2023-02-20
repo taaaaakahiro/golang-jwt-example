@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"golang-jwt-example/pkg/infrastructure/persistence"
+	"golang-jwt-example/pkg/io"
 	"net/http"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 )
 
 type Handler struct {
+	redis  *io.Redis
 	logger *zap.Logger
 	repo   *persistence.Repositories
 	cfg    *Config
@@ -24,8 +26,9 @@ type Config struct {
 	RefreshTokenExpiredDuration time.Duration
 }
 
-func NewHandler(logger *zap.Logger, repositories *persistence.Repositories, cfg *Config) *Handler {
+func NewHandler(logger *zap.Logger, repositories *persistence.Repositories, cfg *Config, redisClient *io.Redis) *Handler {
 	return &Handler{
+		redis:  redisClient,
 		logger: logger,
 		repo:   repositories,
 		cfg:    cfg,

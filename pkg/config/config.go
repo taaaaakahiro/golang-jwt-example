@@ -11,6 +11,7 @@ type Config struct {
 	Server *serverConfig
 	DB     *databaseConfig
 	Auth   *authConfig
+	Redis  *redisConfig
 }
 
 type serverConfig struct {
@@ -21,6 +22,12 @@ type databaseConfig struct {
 	URI      string `env:"URI,required"`
 	Source   string `env:"MONGODB_SOURCE,required"`
 	Database string `env:"MONGODB_DATABASE,required"`
+}
+
+type redisConfig struct {
+	Addr     string `env:"REDIS_ADDR,default=localhost:6379"`
+	Password string `env:"REDIS_PASSWORD,default="`
+	DB       int    `env:"REDIS_COUNT,default=1"`
 }
 
 type authConfig struct {

@@ -25,3 +25,9 @@ services:
       - ./mock/mongo/initdb.d:/docker-entrypoint-initdb.d
       # - ./mongo:/data/db
       # - ./mongo:/data/configdb
+
+  redis:
+    container_name: redis
+    image: redis:alpine3.17
+    ports:
+      - 6379:6379

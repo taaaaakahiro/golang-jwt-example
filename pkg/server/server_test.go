@@ -5,6 +5,7 @@ import (
 	"golang-jwt-example/pkg/config"
 	"golang-jwt-example/pkg/handler"
 	"golang-jwt-example/pkg/infrastructure/persistence"
+	"golang-jwt-example/pkg/io"
 	"golang-jwt-example/pkg/middleware"
 	"log"
 	"net/http/httptest"
@@ -68,6 +69,9 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
+	// redis
+	redisClient := io.NewRedisClient(cfg)
+
 	// start server
 	handlerConfig := &handler.Config{
 		AccessTokenSecret:          cfg.Auth.AccessTokenSecret,
@@ -79,7 +83,7 @@ func TestMain(m *testing.M) {
 		AccessTokenExpiredDuration: time.Duration(cfg.Auth.AccessTokenExpiredDuration),
 		// RefreshTokenExpiredDuration: time.Duration(cfg.Auth.RefreshTokenExpiredDuration),
 	}
-	registry := handler.NewHandler(logger, repositories, handlerConfig)
+	registry := handler.NewHandler(logger, repositories, handlerConfig, redisClient)
 	s := NewServer(
 		registry,
 		middleware.NewMiddleware(logger, repositories, middlewareConfig),

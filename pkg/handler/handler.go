@@ -4,6 +4,7 @@ import (
 	"golang-jwt-example/pkg/handler/general"
 	user "golang-jwt-example/pkg/handler/user"
 	"golang-jwt-example/pkg/infrastructure/persistence"
+	"golang-jwt-example/pkg/io"
 
 	"time"
 
@@ -22,7 +23,7 @@ type Config struct {
 	RefreshTokenExpiredDuration time.Duration
 }
 
-func NewHandler(logger *zap.Logger, repo *persistence.Repositories, cfg *Config) *Handler {
+func NewHandler(logger *zap.Logger, repo *persistence.Repositories, cfg *Config, redisClient *io.Redis) *Handler {
 	userConfig := &user.Config{
 		AccessTokenSecret:           cfg.AccessTokenSecret,
 		RefreshTokenSecret:          cfg.RefreshTokenSecret,
@@ -32,7 +33,7 @@ func NewHandler(logger *zap.Logger, repo *persistence.Repositories, cfg *Config)
 
 	h := &Handler{
 		General: general.NewHandler(logger),
-		User:    user.NewHandler(logger.Named("user"), repo, userConfig),
+		User:    user.NewHandler(logger.Named("user"), repo, userConfig, redisClient),
 	}
 
 	return h
