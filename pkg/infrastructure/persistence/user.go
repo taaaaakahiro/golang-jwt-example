@@ -7,7 +7,7 @@ import (
 	"golang-jwt-example/pkg/domain/repository"
 	"log"
 
-	"github.com/pkg/errors"
+	errs "github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,31 +18,29 @@ import (
 const collection = "users"
 
 type UserRepository struct {
-	database *mongo.Collection
+	col *mongo.Collection
 }
 
 var _ repository.IUserRepository = (*UserRepository)(nil)
 
 func NewUserRepository(db *mongo.Database) *UserRepository {
 	return &UserRepository{
-		database: db.Collection(collection),
+		col: db.Collection(collection),
 	}
 }
 
 func (r *UserRepository) GetUser(ctx context.Context, userID string) (*entity.User, error) {
-	user := entity.User{}
+	var user entity.User
 	flt := bson.D{
 		primitive.E{Key: "user_id", Value: userID},
 	}
 	opt := options.FindOne()
-	err := r.database.FindOne(ctx, flt, opt).Decode(&user)
-	if err != nil {
+	if err := r.col.FindOne(ctx, flt, opt).Decode(&user); err != nil {
 		switch err {
 		case mongo.ErrNoDocuments:
-			log.Printf("user not found userID = %s", userID)
 			return nil, nil
 		default:
-			return nil, errors.WithStack(err)
+			return nil, errs.WithStack(err)
 		}
 	}
 
@@ -58,14 +56,14 @@ func (r *UserRepository) ListUsers(ctx context.Context) ([]*entity.User, error) 
 	flt := bson.D{
 		primitive.E{},
 	}
-	cur, err := r.database.Find(ctx, flt, opt)
+	cur, err := r.col.Find(ctx, flt, opt)
 	if err != nil {
-		return nil, err
+		return nil, errs.WithStack(err)
 	}
 
 	if err = cur.All(ctx, &users); err != nil {
 		log.Printf("error %+v", err)
-		return nil, err
+		return nil, errs.WithStack(err)
 	}
 
 	err = cur.Close(ctx)
@@ -77,21 +75,21 @@ func (r *UserRepository) ListUsers(ctx context.Context) ([]*entity.User, error) 
 
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, inputData input.User) (interface{}, error) {
-	// opts := options.InsertOneOptions{}
-
-	password, err := bcrypt.GenerateFromPassword([]byte(inputData.Password), bcrypt.DefaultCost)
+func (r *UserRepository) CreateUser(ctx context.Context, in input.User) (interface{}, error) {
+	password, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errs.WithStack(err)
 	}
 
 	data := input.User{
-		Name:     inputData.Name,
+		UserID:   in.UserID,
+		Name:     in.Name,
 		Password: string(password),
 	}
-	id, err := r.database.InsertOne(ctx, data, nil)
+	//opts := options.InsertOneOptions{}
+	id, err := r.col.InsertOne(ctx, data, nil)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errs.WithStack(err)
 	}
 
 	return id.InsertedID, nil

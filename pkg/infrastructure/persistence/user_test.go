@@ -2,17 +2,15 @@ package persistence
 
 import (
 	"context"
-	"fmt"
+	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson"
 	"golang-jwt-example/pkg/domain/entity"
 	"golang-jwt-example/pkg/domain/input"
+	"golang.org/x/crypto/bcrypt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func TestUserRepo_GetUser(t *testing.T) {
@@ -25,8 +23,26 @@ func TestUserRepo_GetUser(t *testing.T) {
 	}{
 		{
 			name:    "ok",
-			userID:  "1",
-			want:    &entity.User{UserID: "1", Name: "user1", Password: "pass1"},
+			userID:  "id1",
+			want:    &entity.User{UserID: "id1", Name: "user1", Password: "pass1"},
+			wantErr: nil,
+		},
+		{
+			name:    "ok",
+			userID:  "id2",
+			want:    &entity.User{UserID: "id2", Name: "user2", Password: "pass2"},
+			wantErr: nil,
+		},
+		{
+			name:    "ng: not found",
+			userID:  "notFoundId",
+			want:    nil,
+			wantErr: nil,
+		},
+		{
+			name:    "ng: empty",
+			userID:  "",
+			want:    nil,
 			wantErr: nil,
 		},
 	}
@@ -34,21 +50,21 @@ func TestUserRepo_GetUser(t *testing.T) {
 	for _, tt := range tests {
 		ctx := context.Background()
 		// init db
-		opt := &options.DeleteOptions{}
-		_, _ = userRepo.database.DeleteMany(ctx, opt)
+		op := &options.DeleteOptions{}
+		_, _ = userRepo.col.DeleteMany(ctx, op)
+
 		// cleanup db
 		t.Cleanup(func() {
-			opt := &options.DeleteOptions{}
-			_, _ = userRepo.database.DeleteMany(ctx, opt)
+			op = &options.DeleteOptions{}
+			_, _ = userRepo.col.DeleteMany(ctx, op)
 		})
 
 		// insert seeds
 		seeds := []interface{}{
-			entity.User{UserID: "1", Name: "user1", Password: "pass1"},
-			entity.User{UserID: "2", Name: "user2", Password: "pass2"},
-			entity.User{UserID: "3", Name: "user3", Password: "pass3"},
+			entity.User{UserID: "id1", Name: "user1", Password: "pass1"},
+			entity.User{UserID: "id2", Name: "user2", Password: "pass2"},
 		}
-		userRepo.database.InsertMany(ctx, seeds)
+		userRepo.col.InsertMany(ctx, seeds)
 
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := userRepo.GetUser(ctx, tt.userID)
@@ -84,12 +100,12 @@ func TestUserRepo_ListUsers(t *testing.T) {
 	for _, tt := range tests {
 		ctx := context.Background()
 		// init db
-		opt := &options.DeleteOptions{}
-		_, _ = userRepo.database.DeleteMany(ctx, opt)
+		op := &options.DeleteOptions{}
+		_, _ = userRepo.col.DeleteMany(ctx, op)
 		// cleanup db
 		t.Cleanup(func() {
-			opt := &options.DeleteOptions{}
-			_, _ = userRepo.database.DeleteMany(ctx, opt)
+			op = &options.DeleteOptions{}
+			_, _ = userRepo.col.DeleteMany(ctx, op)
 		})
 
 		// insert seeds
@@ -98,7 +114,7 @@ func TestUserRepo_ListUsers(t *testing.T) {
 			entity.User{UserID: "userId2", Name: "user2", Password: "pass2"},
 			entity.User{UserID: "userId3", Name: "user3", Password: "pass3"},
 		}
-		userRepo.database.InsertMany(ctx, seeds)
+		userRepo.col.InsertMany(ctx, seeds)
 
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := userRepo.ListUsers(ctx)
@@ -113,56 +129,57 @@ func TestUserRepo_ListUsers(t *testing.T) {
 }
 
 func TestUserRepo_CreateUser(t *testing.T) {
+	type args struct {
+		c  context.Context
+		in input.User
+	}
+
 	tests := []struct {
-		name    string
-		input   input.User
-		want    entity.User
-		wantErr error
+		name   string
+		args   args
+		expect func(t *testing.T, a args)
 	}{
 		{
 			name: "ok",
-			input: input.User{
-				Name:     "NewUser1",
-				Password: "NewPassword1",
+			args: args{
+				c: context.Background(),
+				in: input.User{
+					UserID:   "id1",
+					Name:     "NewUser1",
+					Password: "NewPassword1",
+				},
 			},
-			want: entity.User{
-				Name: "NewUser1",
+			expect: func(t *testing.T, a args) {
+				insID, err := userRepo.CreateUser(a.c, a.in)
+				assert.NoError(t, err)
+
+				var got entity.User
+				err = userRepo.col.FindOne(a.c, bson.M{"_id": insID}).Decode(&got)
+				// inserted data
+				assert.Equal(t, "id1", got.UserID)
+				assert.NotEmpty(t, got.Password)
+				assert.Equal(t, "NewUser1", got.Name)
+				// hash password check
+				err = bcrypt.CompareHashAndPassword([]byte(got.Password), []byte(a.in.Password))
+				assert.NoError(t, err)
 			},
-			wantErr: nil,
 		},
 	}
 
 	for _, tt := range tests {
-		ctx := context.Background()
 		// init db
-		opt := &options.DeleteOptions{}
-		_, _ = userRepo.database.DeleteMany(ctx, opt)
+		op := &options.DeleteOptions{}
+		_, err := userRepo.col.DeleteMany(tt.args.c, op)
+		assert.NoError(t, err)
 		// cleanup db
 		t.Cleanup(func() {
-			opt := &options.DeleteOptions{}
-			_, _ = userRepo.database.DeleteMany(ctx, opt)
+			op = &options.DeleteOptions{}
+			_, err = userRepo.col.DeleteMany(tt.args.c, op)
+			assert.NoError(t, err)
 		})
 
 		t.Run(tt.name, func(t *testing.T) {
-			insertID, err := userRepo.CreateUser(ctx, tt.input)
-			assert.NoError(t, err)
-
-			var got entity.User
-			err = userRepo.database.FindOne(ctx, bson.M{"_id": insertID}).Decode(&got)
-			fmt.Println(got.Password)
-
-			if diff := cmp.Diff(tt.wantErr, err); len(diff) != 0 {
-				t.Errorf("mismatch (-want +got):\n%s", diff)
-			}
-			opt := cmpopts.IgnoreFields(entity.User{}, "Password")
-			if diff := cmp.Diff(tt.want, got, opt); len(diff) != 0 {
-				t.Errorf("mismatch (-want +got):\n%s", diff)
-			}
-
-			// hash password check
-			err = bcrypt.CompareHashAndPassword([]byte(got.Password), []byte(tt.input.Password))
-			assert.NoError(t, err)
-
+			tt.expect(t, tt.args)
 		})
 	}
 

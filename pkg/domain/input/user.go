@@ -1,7 +1,7 @@
 package input
 
 type User struct {
-	ID       int    `bson:"id"`
+	UserID   string `bson:"user_id"`
 	Name     string `bson:"name"`
 	Password string `bson:"password"`
 }
